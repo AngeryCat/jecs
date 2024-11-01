@@ -699,7 +699,7 @@ end
 
 local function world_add(world: World, entity: i53, id: i53): ()
 	local entityIndex = world.entityIndex
-	local record = entityIndex.sparse[entity]
+	local record = entityIndex.sparse[entity] or error("No entity found with id "..entity)
 	local from = record.archetype
 	local to = archetype_traverse_add(world, id, from)
 	if from == to then
@@ -723,7 +723,7 @@ end
 
 local function world_set(world: World, entity: i53, id: i53, data: unknown): ()
 	local entityIndex = world.entityIndex
-	local record = entityIndex.sparse[entity]
+	local record = entityIndex.sparse[entity] or error("No entity found with id "..entity)
 	local from = record.archetype
 	local to = archetype_traverse_add(world, id, from)
 	local idr = world.componentIndex[id]
@@ -793,6 +793,9 @@ end
 local function world_remove(world: World, entity: i53, id: i53)
 	local entity_index = world.entityIndex
 	local record = entity_index.sparse[entity]
+	if not record then
+		return
+	end
 	local from = record.archetype
 	if not from then
 		return
