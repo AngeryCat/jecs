@@ -1,9 +1,10 @@
 
-### Modified version of JECS with modifications more suited for our own workflow
+### Version of JECS with modifications more suited for our own workflow
 ## Quick setup guide for contributing:
 Run `aftman install`
 For any testing inside studio, use `dev_src` & sync with `rojo serve dev.project.json` (or use the VSCode plugin for [Rojo](https://marketplace.visualstudio.com/items?itemName=evaera.vscode-rojo))
 
+### JECS Info
 <p align="center">
   <img src="image-5.png" width=35%/>
 </p>
