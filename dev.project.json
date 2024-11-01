@@ -1,0 +1,24 @@
+{
+    "name": "jecs-dev",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "$path": "dev_src/shared",
+            "jecs": {
+                "$path": "src"
+            }
+        },
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "$path": "dev_src/client"
+            }
+        },
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "$path": "dev_src/server"
+        }
+    }
+}

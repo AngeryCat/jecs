@@ -1,6 +1,7 @@
 If we fork JECS:
 	PR all these separately
 	✔	all spaces -> tabs
+	☐ figure out project files & have them work properly with requires
 	☐	[todo merge with below?] convert ids to strings to allow infinite; change pair to use strings uniquely
 	☐	if entity doesn't exist, error (set/delete/etc)
 	☐	double check world_target: it has "index = index + count + 1" which doesn't make sense to me! Maybe it was supposed to be "if index < 0" to support "-1 == last" or something?
@@ -34,6 +35,7 @@ If we fork JECS:
 	☐	In https://ajmmertens.medium.com/building-games-in-ecs-with-entity-relationships-657275ba2c6c they talk about the idea of having "exclusive" relationships... though I observe you can do that with just world.set(e, Component, value) -- but *maybe* the point is that cleanup can be done if it's in a pair, but not if it's a value?
 		☐	Under "ECS Queries" there is also an explanation of how you might conceptually implement complex queries
 	☐	review Technical.todo -- some points have further ideas
+	☐ Fix luau erroring (maybe? might be an issue with my plugin - lt)
 	Investigate to understand:
 		world.componentIndex has a lot of strange looking numbers - why?
 		world.entityIndex has dense vs sparse; they seem to link to each other, but why?
