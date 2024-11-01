@@ -1,0 +1,65 @@
+If we fork JECS:
+	PR all these separately
+	✔	all spaces -> tabs
+	☐	[todo merge with below?] convert ids to strings to allow infinite; change pair to use strings uniquely
+	☐	if entity doesn't exist, error (set/delete/etc)
+	☐	double check world_target: it has "index = index + count + 1" which doesn't make sense to me! Maybe it was supposed to be "if index < 0" to support "-1 == last" or something?
+	issue - entity limit:
+		☐	investigate whether it's just a bug
+	optimize:
+		☐	ECS_ID_IS_WILDCARD (put all in one expression)
+		☐	entity_index_get_alive -- use "or error" instead
+		☐	FLAGS_ADD can be massively simplified as `return if is_pair then ECS_PAIR_FLAG else 0`
+	☐	? fix issues 118 (invoke OnRemove *after*), 133 (invoke hooks with 'prevValue')
+	☐	fix issue in 118 about iteration (store i = #entities before iter)
+	☐	? Different hook usage (OnNewValue, OnOldValue) OR make hooks work differently (like OnAdd is for *all* new values and OnRemove is for *all* old ones?)
+		☐	consider investigating how Flecs does it
+	☐	Entity -> *not* a number (in typescript typings only; not changing actual behaviour)
+	✔ change d.ts to support world.target's `index` parameter
+	☐ have an additional function to get the list of targets, if that's a good idea?
+	☐	change d.ts to have Remove, OnDelete, and all the rest that are supposed to be there (along with documentation on what they do!)
+	☐	add documentation for each exported entity in d.ts
+	☐	improve `pair` doc string: the first entity is the "relationship" and the 2nd one is the "target" (double check Flecs terminology)
+	☐	should be able to iterate over all entities by world.query(Wildcard)
+	☐	should be able to accept a name argument in component & entity creation
+	☐	? error if you say world.add for a component (ideally this would be done strictly in typescript -- if a component is an Entity of type non-"any", then using world.add is probably a mistake)
+	☐	Add observers: https://www.flecs.dev/flecs/md_docs_2ObserversManual.html
+	☐	https://www.flecs.dev/flecs/md_docs_2DesignWithFlecs.html
+		- "Prefabs" appear to be a way to optimize entity creation (so you don't need to have the ECS add an entity to 5 intermediary steps if you need to add 5 components to it!)
+		- "is_alive(entity)"
+		- "lookup(entityName)" that works much like Roblox -- with child/parents you could have `lookup("Parent.Folder.Child3")`
+		- automatic system scheduling, which is useful because "it is easier to import systems from multiple, reusable modules."
+			- to add this, ideally it'd be a "support" class that you can optionally use in your code
+			- a neat optimization: a system with no matched entities will not be run
+	☐	In https://ajmmertens.medium.com/building-games-in-ecs-with-entity-relationships-657275ba2c6c they talk about the idea of having "exclusive" relationships... though I observe you can do that with just world.set(e, Component, value) -- but *maybe* the point is that cleanup can be done if it's in a pair, but not if it's a value?
+		☐	Under "ECS Queries" there is also an explanation of how you might conceptually implement complex queries
+	☐	review Technical.todo -- some points have further ideas
+	Investigate to understand:
+		world.componentIndex has a lot of strange looking numbers - why?
+		world.entityIndex has dense vs sparse; they seem to link to each other, but why?
+			- when entities are deleted, they are still in the 'dense' one?
+			- it looks like even in the code, it's always `id = index; dense[index] = id`?!
+			☐	ah: I think because of the disabled line `--local id = ECS_COMBINE(index, 0)`
+		a ton of tables in the world have "column" and "count", but the count is always(?) 1 - why?
+			sometimes the 'column's overlap, too (ie there'll be duplicates in the same area)
+		what are edges?
+		☐	I'M PRETTY SURE there's a 16777216 entity limit! It's not enforced, and ids are *not* reused!
+		☐	MEMORY LEAK: archetypes aren't cleaned up, such as in this loop:
+			for (const i of $range(1, 20000000)) {
+				if (i % 100000 === 0) {
+					print(i)
+					task.wait()
+				}
+				const e = world.entity()
+				world.add(e, zone)
+				world.add(e, pair(zone, e))
+				if (i > 100) world.delete(e)
+			}
+		☐	PERFORMANCE FINDING: The above for loop lags terribly when you have the `world.add(e, pair(zone, e))` line / is tons faster if you don't (`task.wait()` is only needed after i % 5000000 without the pair line) - presumably because of all the archetypes being created
+	More JECS findings:
+		archetype:
+			columns[1] is a map of [entity.row] = data for the 1st component in the archetype (see `.types[1]` for the id of that component)
+			records is a map of [componentId] = ArchetypeRecord; the same ArchetypeRecord may be shared amongst multiple entries because of Wildcards
+				[pair(R, target)] = [pair(*, target)] and, for one of them, = [pair(R, *)]
+				(because when you query `pair(R, *)` it has to start somewhere - presumably `[pair(R, *)]` gets updated to one of the other ArchetypeRecords if you remove that relationship pair.
+				These ArchetypeRecords are also shared in the componentIndex[componentId].cache[some number??] = ArchetypeRecord
